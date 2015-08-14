@@ -40,7 +40,6 @@ parser.add_argument("--name", help="Set the name of the document", default = "mu
 parser.add_argument("--height", help="Set the height of the figure", default = "5")
 args = parser.parse_args()
 
-#xxx check in SVN sample input & output
 if args.help:
     print "To execute the plotting script, use python block_plotting_dumb.py < exc11.txt with appropriate flags."
     print "Sample input is in the form of\n\
@@ -84,6 +83,7 @@ min_time = 1000000000000000
 max_time = 0
 
 for line in sys.stdin:
+    # Checks for FSDB format
     if line.startswith("#"):
 	    continue;
     line = line.strip()
@@ -101,6 +101,8 @@ for line in sys.stdin:
     if int(tmp[1]) > int(args.end):
         continue
 
+    # Measures min/max time, series of plots at each y-axis point
+    # Most of the time, there should be only one line / y-axis point
     if int(tmp[1]) < min_time:
            min_time = int(tmp[1])
     elif int(tmp[2]) + int(tmp[1]) > max_time:
@@ -113,24 +115,25 @@ for line in sys.stdin:
     block.append( (tmp[0], tmp[1], tmp[2], tmp[3]) )
     temp[tmp[0]] = 1
 
-print min_time
-print max_time
 
-#reorders everything by their y_offset
+print "min time: %s" % min_time
+print "max time: %s" % max_time
+
+# reorders everything by their y_offset
 file_name = args.name
 
 ncols = max_time - min_time
 rect_start = 0
 length = 0
 
-#setting the background
+# setting the background
 r1 = ptch.Rectangle((0,0), ncols, nrows, color="#e0e0ff", fill=True)
 rect.add_patch(r1)
 
 RECT_HEIGHT = 1
 
-#This goes through the file, counting rectangles to find differences and plot
-#Across widths
+# This goes through the file, counting rectangles to find differences and plot
+# Across widths
 for items in block:
     rect_y = float(items[0])
     rect_x = int(items[1])
@@ -142,15 +145,17 @@ for items in block:
         facecolor=fc, linewidth=0, edgecolor="None", antialiased=False)
     rect.add_patch(r1)
 
-#xxx lines too long
-#layout
+# layout
 plt.ylim([0, nrows])
 
+# Inverts axis, sets title
 plt.gca().invert_yaxis()
 plt.tick_params(axis='y', right='off', direction='out')
 plt.xlabel('Time (UTC Time)')
 plt.ylabel('Blocks')
 plt.tight_layout()
+
+# Sets time ticks for measurement
 if int(args.start) != 0:
     min_time = int(args.start)
 if int(args.end) != 1000000000000000:
